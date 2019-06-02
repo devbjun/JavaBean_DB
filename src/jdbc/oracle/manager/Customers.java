@@ -31,7 +31,8 @@ public class Customers {
 				"CT.CUST_SQ " +
 				"FROM CUSTOMERS_TB CT, ORDERS_TB OT " +
 				"WHERE CT.ORDER_SQ = OT.ORDER_SQ AND " +
-				"OT.ORDER_DT BETWEEN TO_CHAR(SYSDATE, 'YYYY-MM-DD') AND TO_CHAR(SYSDATE + 1, 'YYYY-MM-DD')";
+				"OT.ORDER_DT BETWEEN TO_CHAR(SYSDATE, 'YYYY-MM-DD') AND TO_CHAR(SYSDATE + 1, 'YYYY-MM-DD') " +
+				"ORDER BY CT.CUST_SQ ASC";
 		
 		relation.setSQL(SQL);
 		return relation.getIntension().get(0).get("CUST_SQ").toString();

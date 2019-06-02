@@ -74,7 +74,7 @@ public class Managers {
 		}
 		
 		// 주문 번호를 하루 단위로 변환한다.
-		int nCustomer = Integer.parseInt(intension.get(0).get("주문번호").toString());
+		int nCustomer = Integer.parseInt(Customers.getStartCustomerNumberAtToday());
 		for (int i = 0; i < intension.size(); i++) {
 			intension.get(i).put("주문번호", Integer.parseInt(intension.get(i).get("주문번호").toString()) - nCustomer + 1);
 		}

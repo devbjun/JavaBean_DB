@@ -70,7 +70,7 @@ public class Customers {
 			
 			// 주문 테이블에 정보 입력
 			SQL = "INSERT INTO " +
-					"ORDERS_TB(ORDER_SQ, ORDER_ST, ORDER_DT) " +
+					"ORDERS_TB(ORDER_SQ, ORDER_STATUS_SQ, ORDER_DT) " +
 					"VALUES ('" + _millis +  "', 0, TO_DATE('" + date.format(System.currentTimeMillis()) + "', 'YYYY-MM-DD HH24:MI:SS'))";
 			
 			relation.updateSQL(SQL);
@@ -143,7 +143,8 @@ public class Customers {
 				"CT.CUST_SQ " +
 				"FROM CUSTOMERS_TB CT, ORDERS_TB OT " +
 				"WHERE CT.ORDER_SQ = OT.ORDER_SQ AND " +
-				"OT.ORDER_DT BETWEEN TO_CHAR(SYSDATE, 'YYYY-MM-DD') AND TO_CHAR(SYSDATE + 1, 'YYYY-MM-DD')";
+				"OT.ORDER_DT BETWEEN TO_CHAR(SYSDATE, 'YYYY-MM-DD') AND TO_CHAR(SYSDATE + 1, 'YYYY-MM-DD') " +
+				"ORDER BY CT.CUST_SQ ASC";
 		
 		relation.setSQL(SQL);
 		return relation.getIntension().get(0).get("CUST_SQ").toString();
