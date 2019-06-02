@@ -122,4 +122,12 @@ public class JDBCManager {
 	public Connection getConnection() {
 		return conn;
 	}
+	
+	/**
+	 * JDBC Connection 연결 종료
+	 * @throws SQLException
+	 */
+	public void setClose() throws SQLException {
+		conn.close();
+	}
 }
