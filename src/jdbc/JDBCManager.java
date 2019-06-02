@@ -5,21 +5,62 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * LazyHolder 방식을 따르는 SingleTone Class 선언
+ */
 public class JDBCManager {
 	
+	// DB 연결 관련 변수
 	private Connection conn;
 	
+	// DB 연결 정보 설정
 	private String driverName = "oracle.jdbc.driver.OracleDriver";
 	private String url = "jdbc:oracle:thin:@13.124.160.185:1521:XE";
 	private String user = "jcp";
 	private String password = "jcp_1234#";
+	
+	
+	/**
+	 * 싱글톤 클래스 형태로 JDBCManager를 생성한다.
+	 * @return JDBCManager
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
+	 */
+	public static JDBCManager getJDBCManager() throws ClassNotFoundException, SQLException {
+		return LazyHolder.INSTANCE;
+	}
+	
+	
+	/**
+	 * Thread-Safe한 싱글톤 JDBCManager Class를 선언하도록한다.
+	 * 아래의 방식은 LazyHolder를 따른다.
+	 */
+	private static class LazyHolder {
+		private static final JDBCManager INSTANCE;
+		
+		// static 형태로 오류 처리
+		static {
+			try {
+				
+				INSTANCE = new JDBCManager();
+			
+			// 에러 처리
+			} catch (ClassNotFoundException | SQLException e) {
+				
+				e.printStackTrace();
+				throw new ExceptionInInitializerError(e);
+				
+			}
+		}
+	}
+	
 	
 	/**
 	 * DB 연결 및 관리를 위한 클래스
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-	public JDBCManager() throws ClassNotFoundException, SQLException {
+	private JDBCManager() throws ClassNotFoundException, SQLException {
 		Class.forName(driverName);
 		conn = DriverManager.getConnection(
 				url,
