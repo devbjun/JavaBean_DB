@@ -86,8 +86,8 @@ public class Customers {
 			for (int i = 0; i < _nItem.size(); i++) {
 				
 				SQL = "INSERT INTO " +
-						"ORDERS_DETAILS_TB(ORDER_SQ, ITEM_SQ, ITEM_QUANTITY_NO) " +
-						"VALUES ('" + _millis + "', '" + _nItem.get(i) + "', " + _qItem.get(i) + ")";
+						"ORDERS_DETAILS_TB(ORDER_SQ, ITEM_SQ, ITEM_QUANTITY_NO, ORDER_STATUS_SQ) " +
+						"VALUES ('" + _millis + "', '" + _nItem.get(i) + "', " + _qItem.get(i) + ", 0)";
 				
 				relation.updateSQL(SQL);
 			}

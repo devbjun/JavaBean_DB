@@ -90,7 +90,7 @@ public class JDBCManager {
 	 * @throws SQLException
 	 */
 	public int executeUpdate(String _sql) throws SQLException {
-		if (_sql.contains("SELECT")) {
+		if (!_sql.contains("UPDATE") && !_sql.contains("DELETE") && !_sql.contains("INSERT") && !_sql.contains("COMMIT") && !_sql.contains("ROLLBACK")) {
 			System.out.println("executeUpdate 함수에 SELECT문을 사용할 수 없습니다.");
 			return -1; 
 		}

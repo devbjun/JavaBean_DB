@@ -26,8 +26,8 @@ public class Managers {
 	 */
 	
 	/**
-	 * 금일 전체 미수령 주문 내역(주문번호, 품명, 옵션, 단가, 옵션단가, 수량, 합계, 결제일시) 뷰 릴레이션 반환
-	 * @see VIEW(CUST_SQ, ITEM_NM, ITEM_DETAIL_NM, ITEM_QUANTITY_NO, ITEM_PRICE_NO, ITEM_DETAIl_PRICE_NO, ITEM_TOTAL_PRICE_NO, ORDER_DT)
+	 * 금일 전체 미수령 주문 내역(주문번호, 결제일시) 뷰 릴레이션 반환
+	 * @see VIEW(CUST_SQ, ORDER_DT)
 	 * @return Vector<JSONObject>
 	 * @throws ClassNotFoundException 
 	 * @throws SQLException 
@@ -37,15 +37,9 @@ public class Managers {
 	public static Vector<JSONObject> getOrderNotReceivedAtToday() throws ClassNotFoundException, SQLException, Exception {
 		String SQL = "SELECT " + 
 				"CT.CUST_SQ AS 주문번호, " +
-				"IT.ITEM_NM AS 품명, " + 
-				"IDT.ITEM_DETAIL_NM AS 옵션, " + 
-				"IT.ITEM_PRICE_NO AS 단가, " +
-				"IDT.ITEM_DETAIL_PRICE_NO AS 옵션단가, " + 
-				"ODT.ITEM_QUANTITY_NO AS 수량, " + 
-				"((IT.ITEM_PRICE_NO+IDT.ITEM_DETAIL_PRICE_NO)*ODT.ITEM_QUANTITY_NO) AS 합계, " + 
 				"OT.ORDER_DT AS 결제일시 " + 
-				"FROM CUSTOMERS_TB CT, ITEMS_TB IT, ITEMS_DETAILS_TB IDT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT, ORDERS_STATUS_TB OST " + 
-				"WHERE CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ AND OT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND OST.ORDER_STATUS_NM = '수령 대기' AND ODT.ITEM_SQ = IT.ITEM_SQ AND IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ AND " +
+				"FROM CUSTOMERS_TB CT, ORDERS_TB OT, ORDERS_STATUS_TB OST " + 
+				"WHERE CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND OST.ORDER_STATUS_NM = '수령 대기' AND " +
 				"OT.ORDER_DT BETWEEN TO_CHAR(SYSDATE, 'YYYY-MM-DD') AND TO_CHAR(SYSDATE + 1, 'YYYY-MM-DD') " +
 				"ORDER BY OT.ORDER_DT DESC";
 		
@@ -57,15 +51,9 @@ public class Managers {
 			
 			SQL = "SELECT " + 
 					"MAX(CT.CUST_SQ) AS 주문번호, " +
-					"MAX(IT.ITEM_NM) AS 품명, " + 
-					"MAX(IDT.ITEM_DETAIL_NM) AS 옵션, " + 
-					"MAX(IT.ITEM_PRICE_NO) AS 단가, " +
-					"MAX(IDT.ITEM_DETAIL_PRICE_NO) AS 옵션단가, " + 
-					"MAX(ODT.ITEM_QUANTITY_NO) AS 수량, " + 
-					"MAX(((IT.ITEM_PRICE_NO+IDT.ITEM_DETAIL_PRICE_NO)*ODT.ITEM_QUANTITY_NO)) AS 합계, " + 
 					"MAX(OT.ORDER_DT) AS 결제일시 " + 
-					"FROM CUSTOMERS_TB CT, ITEMS_TB IT, ITEMS_DETAILS_TB IDT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT, ORDERS_STATUS_TB OST " + 
-					"WHERE CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ AND OT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND OST.ORDER_STATUS_NM = '수령 대기' AND ODT.ITEM_SQ = IT.ITEM_SQ AND IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ AND " +
+					"FROM CUSTOMERS_TB CT, ORDERS_TB OT, ORDERS_STATUS_TB OST " + 
+					"WHERE CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND OST.ORDER_STATUS_NM = '수령 대기' AND " +
 					"OT.ORDER_DT BETWEEN TO_CHAR(SYSDATE, 'YYYY-MM-DD') AND TO_CHAR(SYSDATE + 1, 'YYYY-MM-DD') " +
 					"ORDER BY OT.ORDER_DT DESC";
 			
@@ -82,9 +70,69 @@ public class Managers {
 		return intension;
 	}
 	
+	/**
+	 * 주문 번호에 대한 미수령 상세 내역 (품명, 옵션, 단가, 옵션단가, 수량, 합계) 뷰 릴레이션 반환
+	 * @see VIEW(ITEM_NM, ITEM_DETAIL_NM, ITEM_QUANTITY_NO, ITEM_PRICE_NO, ITEM_DETAIl_PRICE_NO, ITEM_TOTAL_PRICE_NO)
+	 * @return Vector<JSONObject>
+	 * @throws ClassNotFoundException 
+	 * @throws SQLException 
+	 * @throws Exception 
+	 */
+	public static Vector<JSONObject> getOrderDetailNotReceivedAtNumber(String _nCustomer) throws ClassNotFoundException, SQLException, Exception {
+		
+		_nCustomer = String.valueOf(Integer.parseInt(_nCustomer) + Integer.parseInt(Customers.getStartCustomerNumberAtToday()) - 1);
+		String SQL = "SELECT " + 
+				"IT.ITEM_NM AS 품명, " + 
+				"IDT.ITEM_DETAIL_NM AS 옵션, " + 
+				"IT.ITEM_PRICE_NO AS 단가, " +
+				"IDT.ITEM_DETAIL_PRICE_NO AS 옵션단가, " + 
+				"ODT.ITEM_QUANTITY_NO AS 수량, " + 
+				"((IT.ITEM_PRICE_NO+IDT.ITEM_DETAIL_PRICE_NO)*ODT.ITEM_QUANTITY_NO) AS 합계 " + 
+				"FROM CUSTOMERS_TB CT, ITEMS_TB IT, ITEMS_DETAILS_TB IDT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT, ORDERS_STATUS_TB OST " + 
+				"WHERE CT.CUST_SQ = '" + _nCustomer + "' " +
+					"AND CT.ORDER_SQ = OT.ORDER_SQ " +
+					"AND OT.ORDER_SQ = ODT.ORDER_SQ " +
+					"AND ODT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ " +
+					"AND OT.ORDER_STATUS_SQ IN (SELECT OST.ORDER_STATUS_SQ FROM ORDERS_STATUS_TB OST WHERE OST.ORDER_STATUS_NM = '수령 대기') " +
+					"AND OST.ORDER_STATUS_NM = '수령 대기' " +
+					"AND ODT.ITEM_SQ = IT.ITEM_SQ AND " +
+					"IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ AND " +
+					"OT.ORDER_DT BETWEEN TO_CHAR(SYSDATE, 'YYYY-MM-DD') AND TO_CHAR(SYSDATE + 1, 'YYYY-MM-DD')";
+	
+		relation.setSQL(SQL);
+		Vector<JSONObject> intension = relation.getIntension();
+		
+		// 내포가 NULL인 경우, NULL로 채워진 테이블을만들고 값을 반환한다.
+		if (intension.isEmpty()) {
+			
+			SQL = "SELECT " + 
+					"MAX(IT.ITEM_NM) AS 품명, " + 
+					"MAX(IDT.ITEM_DETAIL_NM) AS 옵션, " + 
+					"MAX(IT.ITEM_PRICE_NO) AS 단가, " +
+					"MAX(IDT.ITEM_DETAIL_PRICE_NO) AS 옵션단가, " + 
+					"MAX(ODT.ITEM_QUANTITY_NO) AS 수량, " + 
+					"MAX(((IT.ITEM_PRICE_NO+IDT.ITEM_DETAIL_PRICE_NO)*ODT.ITEM_QUANTITY_NO)) AS 합계 " + 
+					"FROM CUSTOMERS_TB CT, ITEMS_TB IT, ITEMS_DETAILS_TB IDT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT, ORDERS_STATUS_TB OST " + 
+					"WHERE CT.CUST_SQ = '" + _nCustomer + "' " +
+						"AND CT.ORDER_SQ = OT.ORDER_SQ " +
+						"AND OT.ORDER_SQ = ODT.ORDER_SQ " +
+						"AND ODT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ " +
+						"AND OT.ORDER_STATUS_SQ IN (SELECT OST.ORDER_STATUS_SQ FROM ORDERS_STATUS_TB OST WHERE OST.ORDER_STATUS_NM = '수령 대기') " +
+						"AND OST.ORDER_STATUS_NM = '수령 대기' " +
+						"AND ODT.ITEM_SQ = IT.ITEM_SQ AND " +
+						"IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ AND " +
+						"OT.ORDER_DT BETWEEN TO_CHAR(SYSDATE, 'YYYY-MM-DD') AND TO_CHAR(SYSDATE + 1, 'YYYY-MM-DD')";
+			
+			relation.setSQL(SQL);
+			return relation.getIntension();
+		}
+		
+		return intension;
+	}
+	
 	
 	/**
-	 * 주문번호를 와 상태 입력받아 주문상태를 입력받은 주문 상태로 업데이트하는 함수
+	 * 주문번호와 상태를 입력받아 주문상태를 입력받은 주문 상태로 업데이트하는 함수
 	 * @param _nCustomer
 	 * @param _nStatus
 	 * @return Integer 쿼리문 처리 상태 반환 값
@@ -118,7 +166,7 @@ public class Managers {
 			// _nStatus를 SQ 값으로 대체
 			_nStatus = relation.getIntension().get(0).get("ORDER_STATUS_SQ").toString();
 			
-			// ORDER_ST 업데이트
+			// ORDER_STATUS 업데이트
 			SQL = "UPDATE " +
 					"ORDERS_TB " +
 					"SET " +
@@ -129,6 +177,156 @@ public class Managers {
 			relation.getJDBCManager().getConnection().setAutoCommit(false);
 			
 			// SQL문 실행
+			result = relation.updateSQL(SQL);
+			
+			// ORDER_DETAILS_TB.ORDER_STATUS 업데이트
+			SQL = "UPDATE " +
+					"ORDERS_DETAILS_TB " +
+					"SET " +
+					"ORDER_STATUS_SQ = '" + _nStatus + "' " +
+					"WHERE ORDER_SQ = '" + _nOrder + "'";
+
+			// SQL문 실행
+			result = relation.updateSQL(SQL);
+			
+		}  catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+			// RollBack & AutoCommit 실행
+			setRollBackAndAutoCommit();
+			throw new SQLException(e);
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+			// RollBack & AutoCommit 실행
+			setRollBackAndAutoCommit();
+			throw new Exception(e);
+			
+		}
+		
+		// Commit 실행
+		relation.getJDBCManager().commit();
+		
+		// Auto Commit 설정
+		relation.getJDBCManager().getConnection().setAutoCommit(true);
+		
+		return result;
+	}
+	
+	/**
+	 * 주문번호와 상태, 주문 상세 정보를 입력받아 주문 상세 상태를 입력받은 주문 상태로 업데이트하는 함수
+	 * @param _nCustomer
+	 * @param _nStatus
+	 * @return Integer 쿼리문 처리 상태 반환 값
+	 * @throws ClassNotFoundException 
+	 * @throws SQLException 
+	 * @throws Exception 
+	 */
+	public static int setOrderDetailComplete(String _nCustomer, String[] _nItem, String[] _nDetail, String _nStatus) throws ClassNotFoundException, SQLException, Exception {
+		
+		int result = 0;
+		String SQL;
+		
+		// 입력받은 정보에 대한 기본 검사
+		if (_nItem.length != _nDetail.length) { throw new Exception("입력받은 인자값이 잘못되었습니다."); }
+		if (_nItem.length <= 0 || _nDetail.length <= 0) { throw new Exception("입력받은 인자값이 잘못되었습니다."); } 
+		
+		try {
+			
+			// _nOrder 및 _nCustomer 정보 변환
+			String _nOrder = getOrderNumber(_nCustomer);
+			_nCustomer = String.valueOf(Integer.parseInt(_nCustomer) + Integer.parseInt(Customers.getStartCustomerNumberAtToday()) - 1);
+
+			
+			// _nStatus 존재 여부 검사
+			SQL = "SELECT " +
+					"ORDER_STATUS_SQ " +
+					"FROM ORDERS_STATUS_TB " +
+					"WHERE ORDER_STATUS_NM " +
+					"IN '" + _nStatus + "'";
+			
+			relation.setSQL(SQL);
+			
+			// 없을 시 오류 반환
+			if (relation.getIntension().isEmpty()) {
+				throw new Exception("인자값이 잘못되었습니다.");
+			}
+			
+			// _nStatus를 SQ 값으로 대체
+			_nStatus = relation.getIntension().get(0).get("ORDER_STATUS_SQ").toString();
+			
+			
+			// 상세번호 목록 값을 저장할 벡터타입의 _nDetail 선언
+			Vector<String> _lDetail = new Vector<String>();
+			
+			// 반복하며 정보를 저장한다.
+			for (int i = 0; i < _nItem.length; i++) {
+				
+				// 주문 상세 번호 목록 조회
+				SQL = "SELECT " +
+						"DISTINCT ODT.ORDER_DETAIL_SQ AS 상세번호 " +
+						"FROM ITEMS_TB IT, ITEMS_DETAILS_TB IDT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT, ORDERS_STATUS_TB OST  " +
+						"WHERE IT.ITEM_NM = '" + _nItem[i] + "' AND IDT.ITEM_DETAIL_NM = '" + _nDetail[i] + "' AND IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ AND ODT.ITEM_SQ = IT.ITEM_SQ AND ODT.ORDER_SQ = '" + _nOrder + "' AND ODT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND OST.ORDER_STATUS_NM = '수령 대기'";
+				
+				relation.setSQL(SQL);
+				
+				// 없을 시 오류 반환
+				if (relation.getIntension().isEmpty()) {
+					throw new Exception("인자값이 잘못되었습니다.");
+				}
+				
+				_lDetail.add(relation.getColumn("상세번호")[0]);
+				
+			}
+			
+			// Auto Commit 해제
+			relation.getJDBCManager().getConnection().setAutoCommit(false);
+			
+			// 반복하며 처리한다.
+			for (String _oDetail : _lDetail) {
+				
+				// ORDER_STATUS 업데이트
+				SQL = "UPDATE " +
+						"ORDERS_DETAILS_TB " +
+						"SET " +
+						"ORDER_STATUS_SQ = '" + _nStatus + "' " +
+						"WHERE ORDER_DETAIL_SQ = '" + _oDetail + "'";
+				
+				// SQL문 실행
+				result = relation.updateSQL(SQL);
+				
+				// 처리후 결과 확인
+				if (result == 0) {
+					
+					// RollBack & AutoCommit 실행
+					setRollBackAndAutoCommit();
+					
+					// 오류 발생
+					throw new Exception("처리 도중 알 수 없는 오류가 발생했습니다."); 
+				}
+			}
+			
+			// 만일 _nCustomer의 상세 주문에서 수령 대기 상태인 상세 주문이 없을 경우, 주문 상태를 수령 완료로 처리한다.
+			SQL = "UPDATE ORDERS_TB " +
+					"SET ORDERS_TB.ORDER_STATUS_SQ = (" +
+						"SELECT OST.ORDER_STATUS_SQ " +
+						"FROM ORDERS_STATUS_TB OST " +
+						"WHERE OST.ORDER_STATUS_NM = '수령 완료') " +
+					"WHERE ORDERS_TB.ORDER_SQ = (" +
+						"SELECT OT.ORDER_SQ " +
+						"FROM CUSTOMERS_TB CT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT, ORDERS_STATUS_TB OST " +
+						"WHERE CT.CUST_SQ = '" + _nCustomer + "' AND CT.ORDER_SQ = OT.ORDER_SQ AND ODT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND OST.ORDER_STATUS_NM = '수령 대기' AND (" +
+							"SELECT COUNT(ODT.ORDER_DETAIL_SQ) " +
+							"FROM ORDERS_TB OT, ORDERS_DETAILS_TB ODT, CUSTOMERS_TB CT " +
+							"WHERE CT.CUST_SQ = '" + _nCustomer + "' AND CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ) IN (" +
+								"SELECT COUNT(ODT.ORDER_DETAIL_SQ) " +
+								"FROM ORDERS_TB OT, ORDERS_DETAILS_TB ODT, CUSTOMERS_TB CT, ORDERS_STATUS_TB OST " +
+								"WHERE CT.CUST_SQ = '" + _nCustomer + "' AND CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ AND ODT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND OST.ORDER_STATUS_NM NOT IN '수령 대기'))";
+			
+			// 이 경우는 거의 모든 경우에 대해 0을 리턴한다.
 			result = relation.updateSQL(SQL);
 			
 		}  catch (SQLException e) {
