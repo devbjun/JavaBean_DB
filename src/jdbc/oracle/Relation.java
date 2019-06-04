@@ -84,7 +84,15 @@ public class Relation {
 	 * @throws SQLException
 	 */
 	public int updateSQL(String _sql) throws Exception, SQLException {
-		return jdbc.executeUpdate(_sql);
+		
+		// 연결 종료 전, 결과값 저장
+		int result = jdbc.executeUpdate(_sql);
+		
+		// PreparedStatement 연결 종료
+		jdbc.setClosePreStatement();
+		
+		// 결과값 반환
+		return result;
 	}
 	
 	/**
@@ -222,5 +230,11 @@ public class Relation {
 			// 릴레이션 내포에 튜플 정보를 저장한다.
 			intension.add(tuple);
 		}
+		
+		// ResultSet 연결 종료
+		resultSet.close();
+		
+		// PreparedStatement 연결 종료
+		jdbc.setClosePreStatement();
 	}
 }

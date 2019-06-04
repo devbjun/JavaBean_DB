@@ -147,6 +147,9 @@ public class Customers {
 				"ORDER BY CT.CUST_SQ ASC";
 		
 		relation.setSQL(SQL);
+		
+		// 값이 존재하지 않을 경우 -1 반환
+		if (relation.getIntension().isEmpty()) { return "-1"; }
 		return relation.getIntension().get(0).get("CUST_SQ").toString();
 	}
 	

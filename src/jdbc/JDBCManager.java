@@ -2,6 +2,7 @@ package jdbc;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -19,6 +20,8 @@ public class JDBCManager {
 	private String user = "jcp";
 	private String password = "jcp_1234#";
 	
+	// DB SQL 처리 관련 변수
+	private PreparedStatement pstmt;
 	
 	/**
 	 * 싱글톤 클래스 형태로 JDBCManager를 생성한다.
@@ -80,7 +83,9 @@ public class JDBCManager {
 			System.out.println("executeQeury 함수 SELECT문만 사용할 수 있습니다.");
 			return null;
 		}
-		return conn.createStatement().executeQuery(_sql);
+		
+		pstmt = conn.prepareStatement(_sql);
+		return pstmt.executeQuery();
 	}
 	
 	/**
@@ -94,7 +99,9 @@ public class JDBCManager {
 			System.out.println("executeUpdate 함수에 SELECT문을 사용할 수 없습니다.");
 			return -1; 
 		}
-		return conn.createStatement().executeUpdate(_sql);
+		
+		pstmt = conn.prepareStatement(_sql);
+		return pstmt.executeUpdate();
 	}
 	
 	/**
@@ -129,5 +136,13 @@ public class JDBCManager {
 	 */
 	public void setClose() throws SQLException {
 		conn.close();
+	}
+	
+	/**
+	 * PreparedStatement 연결 종료
+	 * @throws SQLException
+	 */
+	public void setClosePreStatement() throws SQLException {
+		pstmt.close();
 	}
 }
