@@ -309,26 +309,60 @@ public class Managers {
 				}
 			}
 			
-			// 만일 _nCustomer의 상세 주문에서 수령 대기 상태인 상세 주문이 없을 경우, 주문 상태를 수령 완료로 처리한다.
+			// 주문 번호의 상태가 수령 대기면서 주문번호의 세부 주문 상태에 수령 대기인 주문 상세 목록을 조회한다
+			SQL = "SELECT CT.CUST_SQ, OT.ORDER_SQ, ODT.ORDER_DETAIL_SQ, OT.ORDER_STATUS_SQ, ODT.ORDER_STATUS_SQ " + 
+					"FROM CUSTOMERS_TB CT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT " + 
+					"WHERE CT.CUST_SQ = '" + _nCustomer +  "' AND CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ AND OT.ORDER_STATUS_SQ IN (SELECT OST.ORDER_STATUS_SQ FROM ORDERS_STATUS_TB OST WHERE OST.ORDER_STATUS_NM = '수령 대기') AND ODT.ORDER_STATUS_SQ IN (SELECT OST.ORDER_STATUS_SQ FROM ORDERS_STATUS_TB OST WHERE OST.ORDER_STATUS_NM = '수령 대기')";
+			
+			relation.setSQL(SQL);
+			
+			// 주문 번호의 상태가 수령 대기면서 주문번호의 세부 주문 상태에 수령 대기가 존재하는 경우 함수를 종료하고 1을 반환한다.
+			if(!relation.getIntension().isEmpty()) { 
+				
+				// Commit 실행
+				relation.getJDBCManager().commit();
+				
+				// Auto Commit 설정
+				relation.getJDBCManager().getConnection().setAutoCommit(true);
+				return 1; 
+			}
+			
+			
+			/*
+			 * 주문 번호 상태가 수령 대기인 상태에서 만일 세부 수령 상태가 모두 주문 취소인지를 검사한다.
+			 */
+			
+			// 주문 번호에 대한 상세 주문 내역 전체 개수를 받아온다
+			SQL = "SELECT COUNT(*) 상세주문총개수 " +
+					"FROM CUSTOMERS_TB CT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT " +
+					"WHERE CT.CUST_SQ = '" + _nCustomer + "' AND CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ";
+			
+			relation.setSQL(SQL);
+			int tDetail = Integer.parseInt(relation.getColumn("상세주문총개수")[0]);
+			
+			// 주문 번호에 대한 상세 주문 내역의 주문 상태가 '주문 취소'인 주문의 전체 개수를 받아온다.
+			SQL = "SELECT COUNT(*) 주문취소총개수 " +
+					"FROM CUSTOMERS_TB CT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT " +
+					"WHERE CT.CUST_SQ = '" + _nCustomer + "' AND CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ " +
+					"AND ODT.ORDER_STATUS_SQ IN (SELECT OST.ORDER_STATUS_SQ FROM ORDERS_STATUS_TB OST WHERE OST.ORDER_STATUS_NM = '주문 취소')";
+			
+			relation.setSQL(SQL);
+			int cDetail = Integer.parseInt(relation.getColumn("주문취소총개수")[0]);
+			
+			// 두 개수가 동일한 경우에 한해 주문 번호의 전체 상태를 주문 취소로 설정하도록 한다.
+			_nStatus = (tDetail == cDetail) ? "주문 취소" : "수령 완료";
 			SQL = "UPDATE ORDERS_TB " +
 					"SET ORDERS_TB.ORDER_STATUS_SQ = (" +
 						"SELECT OST.ORDER_STATUS_SQ " +
 						"FROM ORDERS_STATUS_TB OST " +
-						"WHERE OST.ORDER_STATUS_NM = '수령 완료') " +
+						"WHERE OST.ORDER_STATUS_NM = '" + _nStatus + "') " +
 					"WHERE ORDERS_TB.ORDER_SQ = (" +
-						"SELECT OT.ORDER_SQ " +
-						"FROM CUSTOMERS_TB CT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT, ORDERS_STATUS_TB OST " +
-						"WHERE CT.CUST_SQ = '" + _nCustomer + "' AND CT.ORDER_SQ = OT.ORDER_SQ AND ODT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND OST.ORDER_STATUS_NM = '수령 대기' AND (" +
-							"SELECT COUNT(ODT.ORDER_DETAIL_SQ) " +
-							"FROM ORDERS_TB OT, ORDERS_DETAILS_TB ODT, CUSTOMERS_TB CT " +
-							"WHERE CT.CUST_SQ = '" + _nCustomer + "' AND CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ) IN (" +
-								"SELECT COUNT(ODT.ORDER_DETAIL_SQ) " +
-								"FROM ORDERS_TB OT, ORDERS_DETAILS_TB ODT, CUSTOMERS_TB CT, ORDERS_STATUS_TB OST " +
-								"WHERE CT.CUST_SQ = '" + _nCustomer + "' AND CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ AND ODT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND OST.ORDER_STATUS_NM NOT IN '수령 대기'))";
+						"SELECT CT.ORDER_SQ " +
+						"FROM CUSTOMERS_TB CT " +
+						"WHERE CT.CUST_SQ = '" + _nCustomer + "')";
 			
-			// 이 경우는 거의 모든 경우에 대해 0을 리턴한다.
 			result = relation.updateSQL(SQL);
-			
+						
 		}  catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
