@@ -1,6 +1,8 @@
 package jdbc.oracle.manager;
 
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Vector;
 
 import org.json.simple.JSONObject;
@@ -8,6 +10,13 @@ import org.json.simple.JSONObject;
 import jdbc.oracle.Relation;
 
 public class Managers {
+	
+	// 날짜 및 가격 포맷 설정
+	private static SimpleDateFormat[] fDate = {
+			new SimpleDateFormat("yyyy-MM-dd"),
+			new SimpleDateFormat("yyyy년 MM월 dd일")
+	};
+	private static DecimalFormat fPrice = new DecimalFormat("###,###");
 	
 	// Static 형태로 relation을 초기화한다.
 	private static Relation relation;
@@ -544,9 +553,9 @@ public class Managers {
 	 * @_dStart YYYY-MM-DD
 	 * @_dEnd YYYY-MM-DD
 	 */
-	public static int getStoreTotalPriceAtPeriod(String _dStart, String _dEnd) throws ClassNotFoundException, SQLException, Exception {
+	public static String getStoreTotalPriceAtPeriod(String _dStart, String _dEnd) throws ClassNotFoundException, SQLException, Exception {
 		String SQL = "SELECT " + 
-				"SUM((IT.ITEM_PRICE_NO+IDT.ITEM_DETAIL_PRICE_NO)*ODT.ITEM_QUANTITY_NO) AS STORE_TOTAL_PRICE_NO " + 
+				"SUM((IT.ITEM_PRICE_NO+IDT.ITEM_DETAIL_PRICE_NO)*ODT.ITEM_QUANTITY_NO) AS 총매출액 " + 
 				"FROM ITEMS_TB IT, ITEMS_DETAILS_TB IDT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT, ORDERS_STATUS_TB OST " + 
 				"WHERE OT.ORDER_SQ = ODT.ORDER_SQ AND OT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND OST.ORDER_STATUS_NM = '수령 완료' AND ODT.ITEM_SQ = IT.ITEM_SQ AND IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ AND " +
 				"OT.ORDER_DT BETWEEN '" + _dStart + "' AND '" + _dEnd + "'";
@@ -554,8 +563,8 @@ public class Managers {
 		relation.setSQL(SQL);
 		
 		// 값을 받아와 값이 없는 경우 0을 반환
-		if (relation.getIntension().get(0).get("STORE_TOTAL_PRICE_NO") == null) { return 0; }
-		return Integer.parseInt(relation.getIntension().get(0).get("STORE_TOTAL_PRICE_NO").toString());
+		if (relation.getIntension().get(0).get("총매출액") == null) { return "0"; }
+		return fPrice.format(Integer.parseInt(relation.getIntension().get(0).get("총매출액").toString()));
 	}
 	
 	
@@ -574,7 +583,7 @@ public class Managers {
 	public static Vector<JSONObject> getStoreTotalPricePerDayAtPeriod(String _dStart, String _dEnd) throws ClassNotFoundException, SQLException, Exception {
 		String SQL = "SELECT " + 
 				"TO_DATE(TO_CHAR(ORDER_DT, 'YYYY-MM-DD'), 'YYYY-MM-DD') AS 날짜, " + 
-				"SUM((IT.ITEM_PRICE_NO+IDT.ITEM_DETAIL_PRICE_NO)*ODT.ITEM_QUANTITY_NO) AS STORE_TOTAL_PRICE_NO " + 
+				"SUM((IT.ITEM_PRICE_NO+IDT.ITEM_DETAIL_PRICE_NO)*ODT.ITEM_QUANTITY_NO) AS 매출액 " + 
 				"FROM ITEMS_TB IT, ITEMS_DETAILS_TB IDT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT, ORDERS_STATUS_TB OST " + 
 				"WHERE OT.ORDER_SQ = ODT.ORDER_SQ AND OT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND OST.ORDER_STATUS_NM = '수령 완료' AND ODT.ITEM_SQ = IT.ITEM_SQ AND IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ AND " +
 				"OT.ORDER_DT BETWEEN '" + _dStart + "' AND '" + _dEnd + "' " +
@@ -589,7 +598,7 @@ public class Managers {
 			
 			SQL = "SELECT " + 
 					"MAX(TO_DATE(TO_CHAR(ORDER_DT, 'YYYY-MM-DD'), 'YYYY-MM-DD')) AS 날짜, " + 
-					"MAX(SUM((IT.ITEM_PRICE_NO+IDT.ITEM_DETAIL_PRICE_NO)*ODT.ITEM_QUANTITY_NO)) AS STORE_TOTAL_PRICE_NO " + 
+					"MAX(SUM((IT.ITEM_PRICE_NO+IDT.ITEM_DETAIL_PRICE_NO)*ODT.ITEM_QUANTITY_NO)) AS 매출액 " + 
 					"FROM ITEMS_TB IT, ITEMS_DETAILS_TB IDT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT, ORDERS_STATUS_TB OST " + 
 					"WHERE OT.ORDER_SQ = ODT.ORDER_SQ AND OT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND OST.ORDER_STATUS_NM = '수령 완료' AND ODT.ITEM_SQ = IT.ITEM_SQ AND IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ AND " +
 					"OT.ORDER_DT BETWEEN '" + _dStart + "' AND '" + _dEnd + "' " +
@@ -602,7 +611,8 @@ public class Managers {
 		
 		// 날짜를 하루 단위로 변환한다.
 		for (int i = 0; i < intension.size(); i++) {
-			intension.get(i).put("날짜", intension.get(i).get("날짜").toString().split(" ")[0]);
+			intension.get(i).put("날짜", fDate[1].format(fDate[0].parse(intension.get(i).get("날짜").toString().split(" ")[0])));
+			intension.get(i).put("매출액", fPrice.format(Integer.parseInt(intension.get(i).get("매출액").toString())) + " ₩");
 		}
 		
 		return intension;

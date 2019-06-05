@@ -22,29 +22,6 @@ public class Items {
 	
 	
 	/**
-	 * 판매 메뉴 조회 (카테고리, 이름, 옵션, 단가, 옵션단가) 뷰 릴레이션 반환
-	 * @see VIEW(ITEM_CTGRY_NM, ITEM_NM, ITEM_DETAIL_NM, ITEM_PRICE_NO, ITEM_DETAIL_PRICE_NO)
-	 * @return Vector<JSONObject>
-	 * @throws Exception 
-	 * @throws SQLException 
-	 * @throws ClassNotFoundException 
-	 */
-	public static Vector<JSONObject> getList() throws ClassNotFoundException, SQLException, Exception {
-		String SQL = "SELECT " + 
-				"ICT.ITEM_CTGRY_NM AS 카테고리, " + 
-				"IT.ITEM_NM AS 이름, " + 
-				"IDT.ITEM_DETAIL_NM AS 옵션, " + 
-				"IT.ITEM_PRICE_NO AS 단가, " + 
-				"IDT.ITEM_DETAIL_PRICE_NO AS 옵션단가 " + 
-				"FROM ITEMS_CATEGORIES_TB ICT, ITEMS_TB IT, ITEMS_DETAILS_TB IDT " + 
-				"WHERE ICT.ITEM_CTGRY_SQ = IT.ITEM_CTGRY_SQ AND IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ";
-		
-		relation.setSQL(SQL);
-		return relation.getIntension();
-	}
-	
-	
-	/**
 	 * 특정 기간 동안의 판매된 메뉴별 수량 (카테고리, 이름, 판매수량) 뷰 릴레이션 반환
 	 * @see VIEW(ITEM_CTGRY_NM, ITEM_NM, SUM(ODT.ITEM_QUANTITY_NO))
 	 * @param _dStart
