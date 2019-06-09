@@ -47,11 +47,16 @@ public class Items {
 	public static Vector<JSONObject> getCategoryItemList(String _categoryName) throws ClassNotFoundException, SQLException, Exception {
 		String SQL = "SELECT "
 				+ "DISTINCT IT.ITEM_NM AS 품명, "
-				+ "IT.ITEM_PRICE_NO AS 단가 "
+				+ "IT.ITEM_PRICE_NO AS 단가, "
+				+ "IT.ITEM_STATUS_SQ AS 상태 "
 				+ "FROM ITEMS_CATEGORIES_TB ICT, ITEMS_TB IT "
 				+ "WHERE ICT.ITEM_CTGRY_SQ = IT.ITEM_CTGRY_SQ "
-				+ "AND ICT.ITEM_CTGRY_NM = '" + _categoryName + "'";
-
+				+ "AND ICT.ITEM_CTGRY_NM = '" + _categoryName + "' "
+				+ "AND IT.ITEM_STATUS_SQ IN ("
+										+ "SELECT IST.ITEM_STATUS_SQ "
+										+ "FROM ITEMS_STATUS_TB IST "
+										+ "WHERE IST.ITEM_STATUS_NM IN ('판매 가능', '일시 품절'))";
+				
 		relation.setSQL(SQL);
 		return relation.getIntension();
 	}

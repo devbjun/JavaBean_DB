@@ -149,7 +149,7 @@ public class Managers {
 	 * @throws SQLException 
 	 * @throws Exception 
 	 */
-	public static int setOrderStatus(String _nCustomer, String _nStatus) throws ClassNotFoundException, SQLException, Exception {
+	public static int updateOrderStatus(String _nCustomer, String _nStatus) throws ClassNotFoundException, SQLException, Exception {
 		
 		int result;
 		String SQL;
@@ -193,7 +193,7 @@ public class Managers {
 					"ORDERS_DETAILS_TB " +
 					"SET " +
 					"ORDER_STATUS_SQ = '" + _nStatus + "' " +
-					"WHERE ORDER_SQ = '" + _nOrder + "'";
+					"WHERE ORDER_SQ = '" + _nOrder + "' AND ORDER_STATUS_SQ = '0'";
 
 			// SQL문 실행
 			result = relation.updateSQL(SQL);
@@ -234,7 +234,7 @@ public class Managers {
 	 * @throws SQLException 
 	 * @throws Exception 
 	 */
-	public static int setOrderDetailStatus(String _nCustomer, String[] _nItem, String[] _nDetail, String _nStatus) throws ClassNotFoundException, SQLException, Exception {
+	public static int updateOrderDetailStatus(String _nCustomer, String[] _nItem, String[] _nDetail, String _nStatus) throws ClassNotFoundException, SQLException, Exception {
 		
 		int result = 0;
 		String SQL;
@@ -454,7 +454,7 @@ public class Managers {
 				"OST.ORDER_STATUS_NM AS 상태, " + 
 				"OT.ORDER_DT AS 결제일시 " + 
 				"FROM CUSTOMERS_TB CT, ITEMS_TB IT, ITEMS_DETAILS_TB IDT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT, ORDERS_STATUS_TB OST " + 
-				"WHERE CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ AND ODT.ITEM_SQ = IT.ITEM_SQ AND IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ AND OT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND OST.ORDER_STATUS_NM NOT IN '수령 대기' AND " +
+				"WHERE CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ AND ODT.ITEM_SQ = IT.ITEM_SQ AND IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ AND ODT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND OST.ORDER_STATUS_NM NOT IN '수령 대기' AND " +
 				"OT.ORDER_DT BETWEEN '" + _dStart + "' AND '" + _dEnd + "' " + 
 				"ORDER BY OT.ORDER_DT DESC";
 			
@@ -475,7 +475,7 @@ public class Managers {
 					"MAX(OST.ORDER_STATUS_NM) AS 상태, " + 
 					"MAX(OT.ORDER_DT) AS 결제일시 " + 
 					"FROM CUSTOMERS_TB CT, ITEMS_TB IT, ITEMS_DETAILS_TB IDT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT, ORDERS_STATUS_TB OST " + 
-					"WHERE CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ AND ODT.ITEM_SQ = IT.ITEM_SQ AND IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ AND OT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND OST.ORDER_STATUS_NM NOT IN '수령 대기' AND " +
+					"WHERE CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ AND ODT.ITEM_SQ = IT.ITEM_SQ AND IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ AND ODT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND OST.ORDER_STATUS_NM NOT IN '수령 대기' AND " +
 					"OT.ORDER_DT BETWEEN '" + _dStart + "' AND '" + _dEnd + "' " + 
 					"ORDER BY OT.ORDER_DT DESC";
 				
@@ -509,7 +509,7 @@ public class Managers {
 				"OST.ORDER_STATUS_NM AS 상태, " + 
 				"OT.ORDER_DT AS 결제일시 " + 
 				"FROM CUSTOMERS_TB CT, ITEMS_TB IT, ITEMS_DETAILS_TB IDT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT, ORDERS_STATUS_TB OST " + 
-				"WHERE CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ AND ODT.ITEM_SQ = IT.ITEM_SQ AND IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ AND OT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND " +
+				"WHERE CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ AND ODT.ITEM_SQ = IT.ITEM_SQ AND IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ AND ODT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND " +
 				"OT.ORDER_SQ = '" + _nOrder + "' " +
 				"ORDER BY OT.ORDER_DT DESC";
 			
@@ -530,7 +530,7 @@ public class Managers {
 					"MAX(OST.ORDER_STATUS_NM) AS 상태, " + 
 					"MAX(OT.ORDER_DT) AS 결제일시 " + 
 					"FROM CUSTOMERS_TB CT, ITEMS_TB IT, ITEMS_DETAILS_TB IDT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT, ORDERS_STATUS_TB OST " + 
-					"WHERE CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ AND ODT.ITEM_SQ = IT.ITEM_SQ AND IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ AND OT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND " +
+					"WHERE CT.ORDER_SQ = OT.ORDER_SQ AND OT.ORDER_SQ = ODT.ORDER_SQ AND ODT.ITEM_SQ = IT.ITEM_SQ AND IT.ITEM_DETAIL_SQ = IDT.ITEM_DETAIL_SQ AND ODT.ORDER_STATUS_SQ = OST.ORDER_STATUS_SQ AND " +
 					"OT.ORDER_SQ = '" + _nOrder + "' " +
 					"ORDER BY OT.ORDER_DT DESC";
 				
