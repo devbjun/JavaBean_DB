@@ -200,7 +200,7 @@ public class Relation {
 		// 결과에 대한 메타 정보를 받아온다.
 		ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
 		
-		// 릴레이션에 대한 외연 & 내포 저장을 위한 Vector<JSONObject> 형태의 객체를 할당한다.
+		// 릴레이션에 대한 내포 & 외연 저장을 위한 Vector<JSONObject> 형태의 객체를 할당한다.
 		intension = new Vector<JSONObject>();
 		
 		// DB로부터 받아온 정보를 intension 변수에 저장한다.

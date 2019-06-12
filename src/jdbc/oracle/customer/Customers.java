@@ -33,7 +33,7 @@ public class Customers {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public static String setOrders(JSONObject _list) throws NumberFormatException, SQLException, Exception {
+	public static String[] setOrders(JSONObject _list) throws NumberFormatException, SQLException, Exception {
 		
 		// 승인번호 및 주문 날짜를 위한 변수 선언
 		long _millis = System.currentTimeMillis() * 1000;
@@ -126,7 +126,12 @@ public class Customers {
 		relation.setSQL(SQL);
 		
 		// 현재 주문자의 주문 번호 = 받은 주문 번호 - 금일 시작 주문번호 + 1
-		return String.valueOf(Integer.parseInt(relation.getIntension().get(0).get("CUST_SQ").toString()) - Integer.parseInt(getStartCustomerNumberAtToday()) + 1);
+		String[] _result = {
+				String.valueOf(Integer.parseInt(relation.getIntension().get(0).get("CUST_SQ").toString()) - Integer.parseInt(getStartCustomerNumberAtToday()) + 1), 
+				String.valueOf(_millis)
+		};
+		
+		return _result;
 	}
 	
 	
