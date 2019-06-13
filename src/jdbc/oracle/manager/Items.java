@@ -45,7 +45,7 @@ public class Items {
 		relation.setSQL(SQL);
 		Vector<JSONObject> intension = relation.getIntension();
 
-		// 내포가 NULL인 경우, NULL로 채워진 테이블을만들고 값을 반환한다.
+		// 외연이 NULL인 경우, NULL로 채워진 테이블을만들고 값을 반환한다.
 		if (intension.isEmpty()) { 
 
 			SQL = "SELECT " +
@@ -67,9 +67,7 @@ public class Items {
 
 	/**
 	 * 전체 물품 (카테고리, 이름, 단가, 판매상태) 뷰 릴레이션 반환
-	 * @see VIEW(ITEM_CTGRY_NM, ITEM_NM, SUM(ODT.ITEM_QUANTITY_NO))
-	 * @param _dStart
-	 * @param _dEnd
+	 * @see VIEW(ITEM_CTGRY_NM, ITEM_NM, ITEM_PRICE_NO, ITEM_STATUS_NM)
 	 * @return Vector<JSONObject>
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
@@ -91,7 +89,8 @@ public class Items {
 
 	
 	/**
-	 * 
+	 * (매점에서 취급 가능한) 물품에 대한 판매 상태 변경
+	 * @param _nItem
 	 * @param _nStatus
 	 * @return Integer
 	 * @throws ClassNotFoundException
