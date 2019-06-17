@@ -11,6 +11,9 @@ import jdbc.oracle.Relation;
 
 public class Managers {
 	
+	//
+	private static boolean flag;
+	
 	// 날짜 및 가격 포맷 설정
 	private static SimpleDateFormat[] fDate = {
 			new SimpleDateFormat("yyyy-MM-dd"),
@@ -43,7 +46,15 @@ public class Managers {
 	 * @throws Exception 
 	 */
 	@SuppressWarnings("unchecked")
-	public static Vector<JSONObject> getOrderNotReceivedAtToday() throws ClassNotFoundException, SQLException, Exception {
+	public static Vector<JSONObject> getOrderNotReceivedAtToday(boolean _isThread) throws ClassNotFoundException, SQLException, Exception {
+		
+		// 쓰레드 처리 요청일 경우, 타 작업이 진행 중이라면 동작하지 못하도록 막는다.
+		if ((_isThread) && (flag)) {
+			flag = false;
+			throw new Exception("[무시 가능한 오류] 이미 기존 요청이 처리 중입니다."); 
+		}
+		
+		flag = true;
 		String SQL = "SELECT " + 
 				"CT.CUST_SQ AS 주문번호, " +
 				"OT.ORDER_DT AS 결제일시 " + 
@@ -76,6 +87,7 @@ public class Managers {
 			intension.get(i).put("주문번호", Integer.parseInt(intension.get(i).get("주문번호").toString()) - nCustomer + 1);
 		}
 		
+		flag = false;
 		return intension;
 	}
 	
@@ -89,6 +101,7 @@ public class Managers {
 	 */
 	public static Vector<JSONObject> getOrderDetailNotReceivedAtNumber(String _nCustomer) throws ClassNotFoundException, SQLException, Exception {
 		
+		flag = true;
 		_nCustomer = String.valueOf(Integer.parseInt(_nCustomer) + Integer.parseInt(Customers.getStartCustomerNumberAtToday()) - 1);
 		String SQL = "SELECT " + 
 				"IT.ITEM_NM AS 품명, " + 
@@ -136,6 +149,7 @@ public class Managers {
 			return relation.getIntension();
 		}
 		
+		flag = false;
 		return intension;
 	}
 	
@@ -151,11 +165,14 @@ public class Managers {
 	 */
 	public static int updateOrderStatus(String _nCustomer, String _nStatus) throws ClassNotFoundException, SQLException, Exception {
 		
+		flag = true;
+		
+		
 		int result;
 		String SQL;
 		
 		try {
-			
+
 			String _nOrder = getOrderNumber(_nCustomer);
 
 			// _nStatus 존재 여부 검사
@@ -222,6 +239,7 @@ public class Managers {
 		// Auto Commit 설정
 		relation.getJDBCManager().getConnection().setAutoCommit(true);
 		
+		flag = false;
 		return result;
 	}
 	
@@ -235,6 +253,8 @@ public class Managers {
 	 * @throws Exception 
 	 */
 	public static int updateOrderDetailStatus(String _nCustomer, String[] _nItem, String[] _nDetail, String _nStatus) throws ClassNotFoundException, SQLException, Exception {
+		
+		flag = true;
 		
 		int result = 0;
 		String SQL;
@@ -396,6 +416,7 @@ public class Managers {
 		// Auto Commit 설정
 		relation.getJDBCManager().getConnection().setAutoCommit(true);
 		
+		flag = false;
 		return result;
 	}
 	
@@ -421,7 +442,11 @@ public class Managers {
 		
 		// 오류 반환
 		if (relation.getIntension().isEmpty()) { throw new Exception("인자값이 잘못되었습니다."); }
-		return relation.getIntension().get(0).get("ORDER_SQ").toString();
+		
+		String result = relation.getIntension().get(0).get("ORDER_SQ").toString();
+		
+		flag = false;
+		return result;
 	}
 	
 	
@@ -442,6 +467,8 @@ public class Managers {
 	 * @_dEnd YYYY-MM-DD
 	 */
 	public static Vector<JSONObject> getOrderAtPeriod(String _dStart, String _dEnd) throws ClassNotFoundException, SQLException, Exception {
+		
+		flag = true;
 		
 		String SQL = "SELECT " + 
 				"OT.ORDER_SQ AS 승인번호, " +
@@ -484,6 +511,7 @@ public class Managers {
 			return relation.getIntension();
 		}
 		
+		flag = false;
 		return intension;
 	}
 	
@@ -497,6 +525,8 @@ public class Managers {
 	 * @throws Exception 
 	 */
 	public static Vector<JSONObject> getOrderDetailAtNumber(String _nOrder) throws ClassNotFoundException, SQLException, Exception {
+		
+		flag = true;
 		
 		String SQL = "SELECT " + 
 				"OT.ORDER_SQ AS 승인번호, " +
@@ -538,6 +568,7 @@ public class Managers {
 			return relation.getIntension();
 		}
 		
+		flag = false;
 		return intension;
 	}
 	
@@ -554,6 +585,9 @@ public class Managers {
 	 * @_dEnd YYYY-MM-DD
 	 */
 	public static String getStoreTotalPriceAtPeriod(String _dStart, String _dEnd) throws ClassNotFoundException, SQLException, Exception {
+		
+		flag = true;
+		
 		String SQL = "SELECT " + 
 				"SUM((IT.ITEM_PRICE_NO+IDT.ITEM_DETAIL_PRICE_NO)*ODT.ITEM_QUANTITY_NO) AS 총매출액 " + 
 				"FROM ITEMS_TB IT, ITEMS_DETAILS_TB IDT, ORDERS_TB OT, ORDERS_DETAILS_TB ODT, ORDERS_STATUS_TB OST " + 
@@ -564,7 +598,11 @@ public class Managers {
 		
 		// 값을 받아와 값이 없는 경우 0을 반환
 		if (relation.getIntension().get(0).get("총매출액") == null) { return "0"; }
-		return fPrice.format(Integer.parseInt(relation.getIntension().get(0).get("총매출액").toString()));
+		
+		String fResult = fPrice.format(Integer.parseInt(relation.getIntension().get(0).get("총매출액").toString()));
+		flag = false;
+		
+		return fResult;
 	}
 	
 	
@@ -581,6 +619,9 @@ public class Managers {
 	 */
 	@SuppressWarnings("unchecked")
 	public static Vector<JSONObject> getStoreTotalPricePerDayAtPeriod(String _dStart, String _dEnd) throws ClassNotFoundException, SQLException, Exception {
+		
+		flag = true;
+		
 		String SQL = "SELECT " + 
 				"TO_DATE(TO_CHAR(ORDER_DT, 'YYYY-MM-DD'), 'YYYY-MM-DD') AS 날짜, " + 
 				"SUM((IT.ITEM_PRICE_NO+IDT.ITEM_DETAIL_PRICE_NO)*ODT.ITEM_QUANTITY_NO) AS 매출액 " + 
@@ -614,6 +655,8 @@ public class Managers {
 			intension.get(i).put("날짜", fDate[1].format(fDate[0].parse(intension.get(i).get("날짜").toString().split(" ")[0])));
 			intension.get(i).put("매출액", fPrice.format(Integer.parseInt(intension.get(i).get("매출액").toString())) + " ₩");
 		}
+		
+		flag = false;
 		
 		return intension;
 	}
